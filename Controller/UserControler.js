@@ -1,43 +1,62 @@
-const fs = require('fs')
-
+const fs = require('fs');
 
 //get all users
-const getUsers =(res, req)=>{
-    const usrse = JSON.parse(fs.readFileSync('./DB.json','utf-8')).Users
-}
+const getUsers = (req, res) => {
+    // Get All user from json server
+    fs.readFile('../DB.json', 'utf8', (err, data) => {
+        const existingData = JSON.parse(data);
+
+        return res.status(200).json(existingData.Users);
+    });
+};
 
 //craet new user
-const createUsers =(req, res) => {
-    const Users = JSON.parse(fs.readFileSync('./DB.json', 'utf-8')).Users;
+const createUsers = (req, res) => {
+    fs.readFile('../DB.json', 'utf8', (err, data) => {
+        const existingData = JSON.parse(data);
 
-    let user = {
-        id: Date.now(),
-        name: req.body.name,
-        email: req.body.email,
-        date: req.body.date
-    }
+        existingData.Users.push({ ...req.body, id: Date.now() });
 
-    Users.push(user);
+        console.log(existingData.Users);
 
-    fs.writeFileSync('../DB.json', JSON.stringify({ Users: Users }));
+        fs.writeFile('../DB.json', JSON.stringify(existingData), (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error writing DB.json');
+            }
 
-    res.send('User added successfully'); // Send a response to the client
-}
+            res.status(200).json({ message: 'Data added successfully' });
+        });
+    });
+};
 
+// delet user  -not working- ? Now Its Wokring
 
-//delet user 
+const deletUser = (req, res) => {
+    const userIdToDelete = parseInt(req.params.id);
 
-const deletUser =(res,req)=>{
-    const users = JSON.parse(fs.readFileSync('../DB.json', 'utf-8')).Users;
-const UserIndex = users.findIndex((u)=>u.id ===parseInt(req.params.id))
+    // Read the existing JSON file
+    fs.readFile('../DB.json', 'utf8', (err, data) => {
+        // Parse the existing JSON data
+        const existingData = JSON.parse(data);
 
-if (UserIndex ===  -1) return res.status(404).send("User  not find")
+        // Find the index of the user with the specified ID
+        const userIndex = existingData.Users.findIndex(
+            (user) => user.id === userIdToDelete
+        );
 
-Users.splice(userIndex,1);
-fs.writeFileSync('../DB.json', JSON.stringify({ users }));
-}
+        if (userIndex === -1) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
+        // Remove the user from the array
+        existingData.Users.splice(userIndex, 1);
 
+        // Write the updated data back to the JSON file
+        fs.writeFile('../DB.json', JSON.stringify(existingData), (err) => {
+            res.status(200).json({ message: 'User deleted successfully' });
+        });
+    });
+};
 
-
-module.exports={getUsers ,createUsers , deletUser}
+module.exports = { getUsers, createUsers, deletUser };
