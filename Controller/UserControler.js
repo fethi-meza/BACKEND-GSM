@@ -25,7 +25,7 @@ const createUsers =(req, res) => {
 }
 
 
-//delet user  not working
+//delet user 
 
 const deletUser =(res,req)=>{
     const users = JSON.parse(fs.readFileSync('../DB.json', 'utf-8')).Users;
