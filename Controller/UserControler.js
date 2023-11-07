@@ -33,8 +33,6 @@ const createUsers = (req, res) => {
 // delet user  -not working- ? Now Its Wokring
 
 const deletUser = (req, res) => {
-    console.log(req.params.id);
-
     const userIdToDelete = parseInt(req.params.id);
 
     // Read the existing JSON file
